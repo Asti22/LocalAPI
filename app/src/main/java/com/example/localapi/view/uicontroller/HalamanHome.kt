@@ -1,5 +1,6 @@
 package com.example.localapi.view.uicontroller
 
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -51,7 +52,15 @@ fun HomeScreen(
             }
         },
     ){
-
+        innerPadding ->
+        HomeBody(
+            statusUiSiswa = viewModel.listSiswa,
+            onSiswaClick = navigateToItemUpdate,
+            retryAction = viewModel::loadSiswa,
+            modifier = modifier
+                .padding(innerPadding)
+                .fillMaxSize()
+        )
     }
 
 }
