@@ -129,3 +129,15 @@ private fun BodyDetailSiswa(
             }
         }
     }
+    @Composable
+    private fun ItemDetailRow(
+        label: String,
+        value: String,
+        modifier: Modifier = Modifier
+    ) {
+        Row(modifier = modifier) {
+            Text(text = label, fontWeight = FontWeight.Bold)
+            Spacer(Modifier.weight(1f))
+            Text(text = value)
+        }
+    }
