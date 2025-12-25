@@ -104,3 +104,28 @@ private fun BodyDetailSiswa(
             }
         }
     }
+    @Composable
+    fun ItemDetailSiswa(
+        dataSiswa: DataSiswa,
+        modifier: Modifier = Modifier
+    ) {
+        Card(
+            modifier = modifier,
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+            )
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(dimensionResource(id = R.dimen.padding_medium)),
+                verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.padding_medium))
+            ) {
+                ItemDetailRow(label = "ID", value = dataSiswa.id.toString())
+                ItemDetailRow(label = "Nama", value = dataSiswa.nama)
+                ItemDetailRow(label = "Alamat", value = dataSiswa.alamat)
+                ItemDetailRow(label = "Telpon", value = dataSiswa.telpon)
+            }
+        }
+    }
