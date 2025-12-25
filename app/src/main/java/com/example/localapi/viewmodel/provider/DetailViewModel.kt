@@ -1,8 +1,5 @@
-@file:OptIn(kotlinx.serialization.InternalSerializationApi::class)
-
 package com.example.localapi.viewmodel.provider
 
-import android.annotation.SuppressLint
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -11,9 +8,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.localapi.modeldata.DataSiswa
 import com.example.localapi.repositori.RepositoryDataSiswa
+import com.example.localapi.view.route.DestinasiDetail
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
-import retrofit2.Response
 import java.io.IOException
 
 sealed interface StatusUIDetail {
@@ -27,8 +24,8 @@ class DetailViewModel(
     private val repositoryDataSiswa: RepositoryDataSiswa
 ) : ViewModel() {
 
-    private val idSiswa: Int =
-        checkNotNull(savedStateHandle[DestinasiDetail.itemIdArg])
+    // ✅ Mengambil ID dari navigasi sebagai String
+    private val idSiswa: String = checkNotNull(savedStateHandle[DestinasiDetail.itemIdArg])
 
     var statusUIDetail: StatusUIDetail by mutableStateOf(StatusUIDetail.Loading)
         private set
@@ -37,29 +34,40 @@ class DetailViewModel(
         getSatuSiswa()
     }
 
+    /**
+     * Mengambil data satu siswa berdasarkan ID
+     */
     fun getSatuSiswa() {
         viewModelScope.launch {
             statusUIDetail = StatusUIDetail.Loading
-            statusUIDetail = try {
+            try {
+                // Memanggil repository dengan ID String
                 val siswa = repositoryDataSiswa.getSatuSiswa(idSiswa)
-                StatusUIDetail.Success(siswa)
+                statusUIDetail = StatusUIDetail.Success(siswa)
             } catch (e: IOException) {
-                StatusUIDetail.Error
+                // Biasanya masalah jaringan/internet
+                statusUIDetail = StatusUIDetail.Error
             } catch (e: HttpException) {
-                StatusUIDetail.Error
+                // Error dari server (seperti 404 atau 500)
+                statusUIDetail = StatusUIDetail.Error
+            } catch (e: Exception) {
+                // Error umum lainnya
+                statusUIDetail = StatusUIDetail.Error
             }
         }
     }
 
+    /**
+     * Menghapus data satu siswa berdasarkan ID
+     */
     fun hapusSatuSiswa() {
         viewModelScope.launch {
-            val resp: Response<Void> =
+            try {
+                // Memanggil fungsi hapus di repository
                 repositoryDataSiswa.hapusSatuSiswa(idSiswa)
-
-            if (resp.isSuccessful) {
-                println("Sukses Hapus Data")
-            } else {
-                println("Gagal Hapus Data")
+                println("Sukses Hapus Data dengan ID: $idSiswa")
+            } catch (e: Exception) {
+                println("Gagal Hapus Data: ${e.message}")
             }
         }
     }

@@ -11,30 +11,36 @@ import kotlinx.coroutines.launch
 import retrofit2.HttpException
 import java.io.IOException
 
-
-sealed interface StatusUiSiswa {
-    data class Success(val siswa: List<DataSiswa> = listOf()) : StatusUiSiswa
-    object Error : StatusUiSiswa
-    object Loading : StatusUiSiswa
+// ✅ Samakan nama dengan UI
+sealed interface StatusUIHome {
+    object Loading : StatusUIHome
+    data class Success(val siswa: List<DataSiswa>) : StatusUIHome
+    object Error : StatusUIHome
 }
 
-class HomeViewModel(private val repositoryDataSiswa: RepositoryDataSiswa) : ViewModel() {
-    var listSiswa: StatusUiSiswa by mutableStateOf(StatusUiSiswa.Loading)
+class HomeViewModel(
+    private val repositoryDataSiswa: RepositoryDataSiswa
+) : ViewModel() {
+
+    // ✅ Samakan nama variabel dengan UI
+    var statusUiHome: StatusUIHome by mutableStateOf(StatusUIHome.Loading)
         private set
 
     init {
-        loadSiswa()
+        getSiswa()
     }
 
-    fun loadSiswa() {
+    fun getSiswa() {
         viewModelScope.launch {
-            listSiswa = StatusUiSiswa.Loading
-            listSiswa = try {
-                StatusUiSiswa.Success(repositoryDataSiswa.getDataSiswa())
+            statusUiHome = StatusUIHome.Loading
+            statusUiHome = try {
+                StatusUIHome.Success(
+                    repositoryDataSiswa.getDataSiswa()
+                )
             } catch (e: IOException) {
-                StatusUiSiswa.Error
+                StatusUIHome.Error
             } catch (e: HttpException) {
-                StatusUiSiswa.Error
+                StatusUIHome.Error
             }
         }
     }

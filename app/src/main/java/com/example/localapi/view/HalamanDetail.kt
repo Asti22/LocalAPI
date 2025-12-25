@@ -9,39 +9,44 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.localapi.R
 import com.example.localapi.modeldata.DataSiswa
-import com.example.localapi.view.components.SiswaTopAppBar
+import com.example.localapi.view.route.DestinasiDetail
 import com.example.localapi.viewmodel.provider.*
-import com.example.mydatasiswa.uicontroller.route.DestinasiDetail
 import kotlinx.coroutines.launch
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DetailSiswaScreen(
-    navigateToEditItem: (Int) -> Unit,
+    navigateToEditItem: (String) -> Unit, // ✅ Diubah ke String
     navigateBack: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: DetailViewModel = viewModel(factory = PenyediaViewModel.Factory)
 ) {
+    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+
     Scaffold(
+        modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             SiswaTopAppBar(
                 title = stringResource(DestinasiDetail.titleRes),
                 canNavigateBack = true,
-                navigateUp = navigateBack
+                navigateUp = navigateBack,
+                scrollBehavior = scrollBehavior
             )
         },
         floatingActionButton = {
             val uiState = viewModel.statusUIDetail
             if (uiState is StatusUIDetail.Success) {
                 FloatingActionButton(
-                    onClick = { navigateToEditItem(uiState.satusiswa.id) },
+                    // ✅ id dikirim sebagai String, gunakan Elvis operator untuk null safety
+                    onClick = { navigateToEditItem(uiState.satusiswa.id ?: "") },
                     shape = MaterialTheme.shapes.medium,
                     modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_large))
                 ) {
@@ -51,8 +56,7 @@ fun DetailSiswaScreen(
                     )
                 }
             }
-        },
-        modifier = modifier
+        }
     ) { innerPadding ->
         val coroutineScope = rememberCoroutineScope()
         BodyDetailSiswa(
@@ -84,7 +88,9 @@ private fun BodyDetailSiswa(
 
         when (statusUiDetail) {
             is StatusUIDetail.Loading -> {
-                Text(text = "Loading...")
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = androidx.compose.ui.Alignment.Center) {
+                    CircularProgressIndicator()
+                }
             }
             is StatusUIDetail.Success -> {
                 ItemDetailSiswa(
@@ -134,7 +140,8 @@ fun ItemDetailSiswa(
                 .padding(dimensionResource(id = R.dimen.padding_medium)),
             verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.padding_medium))
         ) {
-            ItemDetailRow(label = "ID", value = dataSiswa.id.toString())
+            // ✅ Langsung pakai dataSiswa.id karena sudah String
+            ItemDetailRow(label = "ID", value = dataSiswa.id ?: "-")
             ItemDetailRow(label = "Nama", value = dataSiswa.nama)
             ItemDetailRow(label = "Alamat", value = dataSiswa.alamat)
             ItemDetailRow(label = "Telpon", value = dataSiswa.telpon)

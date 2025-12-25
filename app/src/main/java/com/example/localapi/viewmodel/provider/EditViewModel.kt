@@ -11,8 +11,8 @@ import com.example.localapi.modeldata.UIStateSiswa
 import com.example.localapi.modeldata.toDataSiswa
 import com.example.localapi.modeldata.toUiStateSiswa
 import com.example.localapi.repositori.RepositoryDataSiswa
+import com.example.localapi.view.route.DestinasiDetail
 import kotlinx.coroutines.launch
-import retrofit2.Response
 
 class EditViewModel(
     savedStateHandle: SavedStateHandle,
@@ -22,14 +22,18 @@ class EditViewModel(
     var uiStateSiswa by mutableStateOf(UIStateSiswa())
         private set
 
-    private val idSiswa: Int =
-        checkNotNull(savedStateHandle[DestinasiDetail.itemIdArg])
+    // ✅ UBAH KE String agar cocok dengan Repository
+    private val idSiswa: String = checkNotNull(savedStateHandle[DestinasiDetail.itemIdArg])
 
     init {
         viewModelScope.launch {
-            uiStateSiswa = repositoryDataSiswa
-                .getSatuSiswa(idSiswa)
-                .toUiStateSiswa(isEntryValid = true)
+            try {
+                // Mengambil data dan mengubahnya ke UI State
+                val dataSiswa = repositoryDataSiswa.getSatuSiswa(idSiswa)
+                uiStateSiswa = dataSiswa.toUiStateSiswa(isEntryValid = true)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
         }
     }
 
@@ -52,16 +56,20 @@ class EditViewModel(
         if (!validasiInput(uiStateSiswa.detailSiswa)) return
 
         viewModelScope.launch {
-            val response: Response<Void> =
-                repositoryDataSiswa.editSatuSiswa(
+            try {
+                // ✅ idSiswa sudah String, jadi tidak merah lagi
+                val response = repositoryDataSiswa.editSatuSiswa(
                     idSiswa,
                     uiStateSiswa.detailSiswa.toDataSiswa()
                 )
 
-            if (response.isSuccessful) {
-                println("Update Sukses")
-            } else {
-                println("Update Gagal: ${response.message()}")
+                if (response.isSuccessful) {
+                    println("Update Sukses")
+                } else {
+                    println("Update Gagal: ${response.message()}")
+                }
+            } catch (e: Exception) {
+                println("Update Error: ${e.message}")
             }
         }
     }

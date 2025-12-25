@@ -8,16 +8,25 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.localapi.view.DetailSiswaScreen
+import com.example.localapi.view.EditSiswaScreen
+import com.example.localapi.view.route.DestinasiDetail
+import com.example.localapi.view.route.DestinasiEdit
 import com.example.localapi.view.route.DestinasiEntry
 import com.example.localapi.view.route.DestinasiHome
 
 /**
  * Fungsi utama yang dipanggil di MainActivity.
- * Nama fungsi ini HARUS sama dengan yang dipanggil di MainActivity.kt
  */
 @Composable
-fun DataSiswaApp(navController: NavHostController = rememberNavController(), modifier: Modifier = Modifier) {
-    HostNavigasi(navController = navController)
+fun DataSiswaApp(
+    navController: NavHostController = rememberNavController(),
+    modifier: Modifier = Modifier
+) {
+    HostNavigasi(
+        navController = navController,
+        modifier = modifier
+    )
 }
 
 @Composable
@@ -30,43 +39,55 @@ fun HostNavigasi(
         startDestination = DestinasiHome.route,
         modifier = modifier
     ) {
+        // --- HALAMAN HOME ---
+        // Di dalam HostNavigasi.kt
         composable(DestinasiHome.route) {
-            // Pastikan fungsi HomeScreen sudah ada di file HalamanHome.kt
             HomeScreen(
-                navigateToItemEntry = { navController.navigate(DestinasiEntry.route) },
+                navigateToItemEntry = {
+                    navController.navigate(DestinasiEntry.route)
+                },
+                // ✅ Ganti nama parameter ini agar sama dengan yang ada di HomeScreen.kt
                 navigateToItemUpdate = { id ->
-                    // Navigasi update jika sudah diimplementasikan
+                    navController.navigate("${DestinasiDetail.route}/$id")
                 }
             )
         }
+
+        // --- HALAMAN ENTRY (TAMBAH) ---
         composable(DestinasiEntry.route) {
-            // Pastikan fungsi EntrySiswaScreen sudah ada di file HalamanEntry.kt
             EntrySiswaScreen(
                 navigateBack = { navController.popBackStack() }
             )
         }
+
+        // --- HALAMAN DETAIL ---
         composable(
             route = DestinasiDetail.routeWithArgs,
             arguments = listOf(navArgument(DestinasiDetail.itemIdArg) {
-                type = NavType.IntType
-            })
-        ){
-            DetailSiswaScreen(
-                navigateToEditItem = { navController.navigate("${DestinasiEdit.route}/$it") },
-                navigateBack = { navController.navigate(DestinasiHome.route) }
-            )
-        }
-        composable(
-            route = DestinasiEdit.routeWithArgs,
-            arguments = listOf(navArgument(DestinasiEdit.itemIdArg) {
-                type = NavType.IntType
+                // ✅ WAJIB StringType karena ID di DB adalah String
+                type = NavType.StringType
             })
         ) {
-            EditSiswaScreen(
-                navigateBack = { navController.navigate(DestinasiHome.route) },
-                onNavigateUp = { navController.navigateUp() }
+            DetailSiswaScreen(
+                navigateToEditItem = { id ->
+                    navController.navigate("${DestinasiEdit.route}/$id")
+                },
+                navigateBack = { navController.popBackStack() }
             )
         }
 
+        // --- HALAMAN EDIT ---
+        composable(
+            route = DestinasiEdit.routeWithArgs,
+            arguments = listOf(navArgument(DestinasiEdit.itemIdArg) {
+                // ✅ WAJIB StringType agar SavedStateHandle di EditViewModel tidak null
+                type = NavType.StringType
+            })
+        ) {
+            EditSiswaScreen(
+                navigateBack = { navController.popBackStack() },
+                onNavigateUp = { navController.navigateUp() }
+            )
+        }
     }
 }
